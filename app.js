@@ -21,7 +21,10 @@
 //  userSchema.plugin(encrypt,{secret:secret , encryptedFields:['password']});
  const User = mongoose.model("User",userSchema);
 
-
+const secretSchema= new mongoose.Schema({
+   secret: String
+});
+const Secret = mongoose.model("Secret",secretSchema);
 
 
  app.get("/",function(req,res){
@@ -45,6 +48,28 @@
 
  })
 
+ 
+ app.get("/submit",function(req,res){
+    res.render("submit")
+
+ })
+
+ app.post("/submit",function(req,res){
+   const sec = new Secret({
+      secret:req.body.secret
+   })
+   sec.save(function(err){
+      if(!err){
+         res.send("Secret Submitted")
+      }
+      else {
+         res.send(err);
+      }
+   })
+ })
+
+ 
+
  app.post("/register",function(req,res){
     const newUser = new User({
         email: req.body.username,
@@ -61,6 +86,8 @@
     })
  })
 
+
+
  app.post("/login",function(req,res){
    const username = req.body.username;
    const password = req.body.password;
@@ -71,11 +98,11 @@
          // console.log(foundUser.password);
          if(foundUser.password===password)
          {
-            res.render("secrets")
+            Secret.find({}).then(SecretArray=>res.render("secrets" , {data : SecretArray}))
          }
-         else res.render('login');
+         else res.send("Invalid credentials")
       }
-      else console.log("No user found");
+      else res.send("User not exits");
    })
 
 

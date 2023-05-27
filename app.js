@@ -62,7 +62,7 @@ app.get("/register", function (req, res) {
 })
 
 app.get("/logout",function(req,res){
-   req.logout();
+   req.logout(err=>console.log(err));
    res.redirect("/");
 });
 

@@ -40,7 +40,10 @@ userSchema.plugin(passportLocalMongoose)
 userSchema.plugin(findOrCreate)
 
 const User = mongoose.model("User", userSchema);
-
+const secretSchema= new mongoose.Schema({
+   secret: String
+});
+const Secret = mongoose.model("Secret",secretSchema);
 passport.use(User.createStrategy());
 
 passport.serializeUser(function(user, done) {
@@ -92,6 +95,15 @@ app.get('/logout', function(req, res, next){
      res.redirect('/');
    });
  });
+ 
+ app.get("/submit",function(req,res){
+   if (req.isAuthenticated()) {
+      res.render("submit")
+     } else {
+      res.redirect("/");
+   }
+
+})
 
 
 app.get('/auth/google',
@@ -108,7 +120,7 @@ function(req, res) {
 
 app.get("/secrets", function (req, res) {
    if (req.isAuthenticated()) {
-      res.render("secrets");
+      Secret.find({}).then(SecretArray=>res.render("secrets" , {data : SecretArray}))
 
    } else {
       res.redirect("/login");
@@ -129,6 +141,19 @@ app.post("/register", function (req, res) {
    })
 })
 
+app.post("/submit",function(req,res){
+   const sec = new Secret({
+      secret:req.body.secret
+   })
+   sec.save(function(err){
+      if(!err){
+         res.redirect("secrets")
+      }
+      else {
+         res.send(err);
+      }
+   })
+ })
 
 app.post("/login", function (req, res) {
    const user = new User({
